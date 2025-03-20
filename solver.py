@@ -207,6 +207,10 @@ def breadthFirstSearch(gameState):
 
 def cost(actions):
     """A cost function"""
+    """
+    Chi phí được tính dựa trên số bước di chuyển không liên quan đến việc đẩy hộp,
+    tức là chỉ tính các hành động chữ thường (di chuyển nhân vật mà không đẩy hộp).
+    """
     return len([x for x in actions if isinstance(x, str) and x.islower()])
 
 def uniformCostSearch(gameState):
@@ -216,28 +220,35 @@ def uniformCostSearch(gameState):
 
     startState = (beginPlayer, beginBox)
     frontier = PriorityQueue()
-    frontier.push([startState], 0)
+    frontier.push([startState], 0) # Đẩy trạng thái khởi đầu vào hàng đợi với chi phí 0
     exploredSet = set()
-    actions = PriorityQueue()
+    actions = PriorityQueue() # Hàng đợi ưu tiên lưu các hành động tương ứng với trạng thái
     actions.push([0], 0)
     temp = []
     ### CODING FROM HERE ###
     while not frontier.isEmpty():
-        node = frontier.pop()
-        node_action = actions.pop()
+        node = frontier.pop() # Lấy trạng thái có chi phí thấp nhất từ hàng đợi ưu tiên
+        node_action = actions.pop() # Lấy danh sách hành động tương ứng
 
+        # Nếu trạng thái hiện tại là trạng thái đích thì dừng tìm kiếm
         if isEndState(node[-1][-1]):  
             temp += node_action[1:]
             break
-
+        
+        # Nếu trạng thái chưa được duyệt, thêm vào exploredSet
         if node[-1] not in exploredSet:
             exploredSet.add(node[-1])
+
+            # Duyệt qua tất cả các hành động hợp lệ từ trạng thái hiện tại
             for action in legalActions(node[-1][0], node[-1][1]):
                 newPosPlayer, newPosBox = updateState(node[-1][0], node[-1][1], action)
                 if isFailed(newPosBox):
                     continue
                 
+                # Tính toán chi phí cho trạng thái mới
                 new_cost = cost(node_action + [action[-1]])  
+                
+                # Thêm trạng thái mới và hành động vào hàng đợi ưu tiên
                 frontier.push(node + [(newPosPlayer, newPosBox)], new_cost)
                 actions.push(node_action + [action[-1]], new_cost)
 
@@ -260,7 +271,7 @@ def readCommand(argv):
     args['method'] = options.agentMethod
     return args
 
-def get_move(layout, player_pos, method):
+def get_move(layout, player_pos, method, level):
     time_start = time.time()
     global posWalls, posGoals
     # layout, method = readCommand(sys.argv[1:]).values()
@@ -277,6 +288,8 @@ def get_move(layout, player_pos, method):
     else:
         raise ValueError('Invalid method.')
     time_end=time.time()
-    print('Runtime of %s: %.2f second.' %(method, time_end-time_start))
+
+    runtime = time_end - time_start
+    print('Level %d - Runtime of %s: %.2f seconds.' % (level, method, runtime))
     print(result)
     return result

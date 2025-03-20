@@ -9,6 +9,7 @@ from player_interface import *
 from solver import *
 from pyautogui import press, typewrite, hotkey
 
+import os
 import _thread
 import time
 def move( threadName, delay, strategy):
@@ -41,25 +42,14 @@ class Game:
            SOKOBAN.TARGET_FILLED: pygame.image.load('assets/images/valid_box.png').convert_alpha(),
            SOKOBAN.PLAYER: pygame.image.load('assets/images/player_sprites.png').convert_alpha()
        }
-    
-    def auto_solve(self):
-        # Lấy trạng thái bàn chơi
-        layout = self.level.structure
-        player_pos = self.player.pos
-        
-        # Chọn thuật toán giải (dfs, bfs, ucs)
-        method = 'ucs'  
-        
-        # Gọi solver để tìm đường đi
-        strategy = get_move(layout, player_pos, method)
-        
-        # Thực hiện các bước di chuyển tự động
-        _thread.start_new_thread(move, ("AutoMove", 0.2, strategy))
 
 
     def load_level(self):
-        if self.index_level == 5:
-            self.index_level += 1
+        # Debug
+        # if self.index_level != 17:
+        #     self.index_level = 17
+        # print(f"Loading level {self.index_level}")  
+
         self.level = Level(self.index_level)
         self.board = pygame.Surface((self.level.width, self.level.height))
         if self.player:
@@ -68,7 +58,8 @@ class Game:
         else:
             self.player = Player(self.level)
 
-        self.auto_solve()
+        print(f"Player starting position: {self.player.pos}")  # Debug
+        self.auto_move()
 
     def start(self):
         while self.play:
@@ -90,7 +81,7 @@ class Game:
                 self.player.move(event.key, self.level, self.player_interface)
                 if self.has_win():
                     self.index_level += 1
-                    if (self.index_level == 17):
+                    if (self.index_level > 18):
                         self.index_level = 1
                     self.scores.save()
                     self.load_level()
@@ -130,12 +121,12 @@ class Game:
         return nb_missing_target == 0
 
     def auto_move(self):
-        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'dfs')
-        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'bfs')
-        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'ucs')
-        # with open("assets/sokobanSolver/Solverlevel_" + str(self.index_level) + ".txt", 'w+') as solver_file:
-        #     for listitem in strategy:
-        #         solver_file.write('%s, ' % listitem)
+        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'dfs', self.index_level)
+        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'bfs', self.index_level)
+        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'ucs', self.index_level)
+        with open(r"D:\Tan's data\STUDY____________\UIT Study Materials\AI\sokoban\sokoban\assets\sokobanLevels" + str(self.index_level) + ".txt", 'w+') as solver_file:
+            for listitem in strategy:
+                solver_file.write('%s, ' % listitem)
         if strategy is not None:
             try:
                 _thread.start_new_thread( move, ("Thread-1", 2, strategy) )
