@@ -46,8 +46,8 @@ class Game:
 
     def load_level(self):
         # Debug
-        # if self.index_level != 17:
-        #     self.index_level = 17
+        # if self.index_level != 5:
+        #     self.index_level = 5
         # print(f"Loading level {self.index_level}")  
 
         self.level = Level(self.index_level)
@@ -121,9 +121,14 @@ class Game:
         return nb_missing_target == 0
 
     def auto_move(self):
-        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'dfs', self.index_level)
+        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'dfs', self.index_level)
         # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'bfs', self.index_level)
-        # strategy = get_move(self.level.structure[:-1], self.level.position_player, 'ucs', self.index_level)
+        strategy = get_move(self.level.structure[:-1], self.level.position_player, 'ucs', self.index_level)
+
+        if strategy is not None:
+            print(f"Level {self.index_level}: {len(strategy)} steps.")
+
+
         with open(r"D:\Tan's data\STUDY____________\UIT Study Materials\AI\sokoban\sokoban\assets\sokobanLevels" + str(self.index_level) + ".txt", 'w+') as solver_file:
             for listitem in strategy:
                 solver_file.write('%s, ' % listitem)
@@ -134,5 +139,4 @@ class Game:
                 print ("Error: unable to start thread")
 
 
-# Define a function for the thread
 
